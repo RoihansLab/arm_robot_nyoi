@@ -9,9 +9,19 @@
 const int PIN_SERVO[4] = {13, 14, 27, 26};
 
 // -- Pin Motor Conveyor (L298N) --------------------------------
-//    ENA sudah dijumper di modul L298N (tidak perlu pin ESP32)
+//    IN1 / IN2 : arah motor
+//    PIN_ENA   : speed PWM - LEPAS jumper ENA dari L298N, sambung ke pin 25
+//                Jika ENA tetap dijumper (tidak pakai speed control),
+//                set PIN_ENA = -1 dan motor selalu full speed.
 const int PIN_IN1 = 32;
 const int PIN_IN2 = 33;
+const int PIN_ENA = 25;   // -1 jika ENA masih dijumper (no speed control)
+
+// -- PWM LEDC untuk speed conveyor ----------------------------
+const int  PWM_CHANNEL   = 0;    // LEDC channel (0-15)
+const int  PWM_FREQ      = 1000; // Hz
+const int  PWM_BITS      = 8;    // resolusi 8-bit => duty 0-255
+const uint8_t CONVEYOR_SPEED_DEFAULT = 70;  // default start speed (0-255)
 
 // -- Batas Sudut Aman per Servo (UBAH SETELAH KALIBRASI) ------
 //   indeks: 0=base  1=shoulder  2=elbow  3=gripper
@@ -22,7 +32,14 @@ const int ANGLE_MAX[4] = {180, 160, 160, 120};
 const int HOME[4] = {90, 90, 90, 90};
 
 // -- Konveyor -------------------------------------------------
-const unsigned long CONVEYOR_MS  = 5000;   // durasi jalan (ms)
+const unsigned long CONVEYOR_MS  = 5000;   // durasi jalan auto (ms)
+const unsigned long KICKSTART_MS = 50;     // durasi sentakan awal PWM maks (ms)
+
+// -- Sensor Flying Fish (Obstacle/Object Sensor) --------------
+//    Pin 34: Input Only (Aman untuk upload firmware, bukan strapping pin)
+//            LOW  = objek terdeteksi (sensor aktif LOW)
+//            HIGH = tidak ada objek
+const int PIN_SENSOR = 34;
 
 // -- Interpolasi Servo ----------------------------------------
 const int STEP_DEG = 1;    // derajat per langkah

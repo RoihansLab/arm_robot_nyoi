@@ -45,7 +45,10 @@ const int STEP_DEG = 1;                  // derajat per langkah
 const int STEP_MS  = 15;                 // jeda antar langkah
 const int MAX_FRAMES = 50;
 const int CONVEYOR_PWM = 200;            // 0-255
+const unsigned long KICKSTART_MS = 50;   // sentakan awal PWM 255 saat motor DC mulai jalan
 ```
+
+> **Kickstart motor DC gearbox:** setiap konveyor berubah dari MATI → HIDUP, `conveyorOn()` (di `motion.h`) memberi PWM 255 selama `KICKSTART_MS` agar motor gearbox lepas dari diam, lalu `updateConveyorKickstart()` menurunkannya ke PWM normal. Durasi diatur di `config.h` (`KICKSTART_MS`, sekarang 50 ms — sebelumnya 150 ms terasa terlalu lama).
 
 ## 3. Struktur Data & State
 

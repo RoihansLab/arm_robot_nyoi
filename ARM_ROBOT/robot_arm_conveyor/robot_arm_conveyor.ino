@@ -182,6 +182,7 @@ void handlePlay() {
 
 // ── GET /stop ─────────────────────────────────────────────────
 void handleStop() {
+  conveyorManualOn = false;
   conveyorOff();
   state = IDLE;
   sendOK("Stop OK");
@@ -189,6 +190,7 @@ void handleStop() {
 
 // ── GET /estop ───────────────────────────────────────────────
 void handleEstop() {
+  conveyorManualOn = false;
   conveyorOff();
   freezeServos();
   state = ESTOP;
@@ -201,7 +203,8 @@ void handleReset() {
   sendOK("Reset OK");
 }
 
-// ── GET /conveyor ────────────────────────────────────────────
+// ── GET /conveyor?state=0|1 ──────────────────────────────────
+//    Toggle manual konveyor dari gamepad
 void handleConveyor() {
   if (isEstopBlocked()) return;
   if (state == PLAY_SEQ || state == CONVEYOR_RUN) {
@@ -209,12 +212,45 @@ void handleConveyor() {
   }
   
   int st = server.arg("state").toInt();
-  if (st == 1) {
-    conveyorOn();
+  conveyorManualOn = (st == 1);
+  if (conveyorManualOn) {
+    // Langsung nyalakan konveyor (jika sensor tidak memblokir)
+    if (!(sensorEnabled && sensorDetected())) {
+      conveyorOn();
+    }
     sendOK("Konveyor ON");
   } else {
     conveyorOff();
     sendOK("Konveyor OFF");
+  }
+}
+
+// ── GET /conveyorspeed?val=0-255 ─────────────────────────────
+//    Atur kecepatan konveyor (butuh pin ENA terhubung ke ESP32)
+void handleConveyorSpeed() {
+  if (isEstopBlocked()) return;
+  String valStr = server.arg("val");
+  if (valStr.length() == 0) {
+    // Query saja
+    sendOK(String(conveyorSpeed));
+    return;
+  }
+  int v = constrain(valStr.toInt(), 0, 255);
+  setConveyorSpeed((uint8_t)v);
+  sendOK("Speed: " + String(v));
+}
+
+// ── GET /sensor?enable=0|1 ───────────────────────────────────
+//    Toggle apakah sensor Flying Fish aktif atau tidak
+void handleSensor() {
+  if (isEstopBlocked()) return;
+  String enStr = server.arg("enable");
+  if (enStr.length() > 0) {
+    sensorEnabled = (enStr.toInt() == 1);
+    sendOK(sensorEnabled ? "Sensor aktif" : "Sensor nonaktif");
+  } else {
+    // GET tanpa parameter => query status
+    sendOK(sensorEnabled ? "1" : "0");
   }
 }
 
@@ -230,6 +266,10 @@ void handleStatus() {
   }
   
   json += "\"state\":\"" + currentStatus + "\",";
+  json += "\"conveyorOn\":" + String(conveyorManualOn ? "true" : "false") + ",";
+  json += "\"conveyorSpeed\":" + String(conveyorSpeed) + ",";
+  json += "\"sensorEnabled\":" + String(sensorEnabled ? "true" : "false") + ",";
+  json += "\"sensorDetect\":" + String(sensorDetected() ? "true" : "false") + ",";
   for (int i = 0; i < NUM_SEQ; i++) {
       json += "\"len" + String((char)('A' + i)) + "\":" + String(seqLen[i]) + ",";
   }
@@ -374,18 +414,20 @@ void setup() {
   Serial.println(WiFi.softAPIP());
 
   // Register routes
-  server.on("/",       handleRoot);
-  server.on("/servo",  handleServo);
-  server.on("/save",   handleSave);
-  server.on("/undo",   handleUndo);
-  server.on("/clear",  handleClear);
+  server.on("/",         handleRoot);
+  server.on("/servo",    handleServo);
+  server.on("/save",     handleSave);
+  server.on("/undo",     handleUndo);
+  server.on("/clear",    handleClear);
   server.on("/clearAll", handleClearAll);
-  server.on("/play",   handlePlay);
-  server.on("/stop",   handleStop);
-  server.on("/estop",  handleEstop);
-  server.on("/reset",  handleReset);
-  server.on("/status", handleStatus);
-  server.on("/conveyor", handleConveyor);
+  server.on("/play",     handlePlay);
+  server.on("/stop",     handleStop);
+  server.on("/estop",    handleEstop);
+  server.on("/reset",    handleReset);
+  server.on("/status",   handleStatus);
+  server.on("/conveyor",      handleConveyor);
+  server.on("/conveyorspeed", handleConveyorSpeed);
+  server.on("/sensor",        handleSensor);
   server.begin();
   Serial.println("Web server started");
 
@@ -400,6 +442,7 @@ void setup() {
 // =============================================================
 void loop() {
   server.handleClient();
+  updateConveyorKickstart(); // Non-blocking: update timer sentakan awal kickstart motor
 
   switch (state) {
     case BOOT_HOME:
@@ -414,6 +457,16 @@ void loop() {
       break;
 
     case CONVEYOR_RUN:
+      // Cek sensor: jika mendeteksi objek, hentikan konveyor (jeda)
+      if (sensorEnabled && sensorDetected()) {
+        conveyorOff();
+        // Tidak maju waktu tConv agar konveyor kembali jalan setelah objek pergi
+        // (efeknya CONVEYOR_MS mulai lagi dari saat sensor bebas)
+        tConv = millis();
+      } else {
+        conveyorOn(); // pastikan nyala jika sensor bebas
+      }
+
       if (millis() - tConv >= CONVEYOR_MS) {
         conveyorOff();
         // Langsung pindah ke PLAY_SEQ berikutnya yang sudah diset di runSequence
@@ -425,10 +478,12 @@ void loop() {
       }
       break;
 
-    // Saat manual/siap, izinkan pergerakan servo
+    // Saat manual/siap, izinkan pergerakan servo & update konveyor manual
     case IDLE:
     case RECORDING:
       stepServos();
+      // Update konveyor manual berdasarkan tombol gamepad & status sensor
+      updateManualConveyor();
       break;
 
     // ESTOP: tidak ada aksi aktif di loop (servo freeze)

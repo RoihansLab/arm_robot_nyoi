@@ -25,11 +25,27 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
 .toast.err{border-color:#e74c3c;color:#e74c3c;}
 
 /* MODE SWITCH */
-.mode-wrap{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.mode-wrap{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;justify-content:center;}
 .mode-label{font-size:.62rem;color:#444;text-transform:uppercase;letter-spacing:1px;}
 .mode-toggle{display:flex;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;}
 .mode-btn{padding:6px 16px;font-size:.7rem;font-weight:700;border:none;background:transparent;color:#444;cursor:pointer;transition:all .2s;letter-spacing:.5px;text-transform:uppercase;}
 .mode-btn.active{background:#6c63ff;color:#fff;box-shadow:0 0 12px rgba(108,99,255,.5);}
+
+/* CONVEYOR CONTROLS ROW */
+.conv-row{display:flex;align-items:center;gap:8px;width:100%;max-width:480px;margin-bottom:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:7px 12px;}
+.conv-label{font-size:.62rem;color:#555;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;}
+.conv-btn{padding:6px 14px;font-size:.7rem;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:all .2s;letter-spacing:.5px;text-transform:uppercase;}
+.conv-btn-on{background:#1a4a3a;color:#2ea88a;border:1px solid rgba(46,168,138,.3);}
+.conv-btn-on.active{background:#2ea88a;color:#fff;box-shadow:0 0 12px rgba(46,168,138,.5);}
+.conv-btn-off{background:#3a1a1a;color:#e74c3c;border:1px solid rgba(231,76,60,.3);}
+.conv-btn-off.active{background:#e74c3c;color:#fff;box-shadow:0 0 10px rgba(231,76,60,.4);}
+.sensor-wrap{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.sensor-dot{width:9px;height:9px;border-radius:50%;background:#333;border:1px solid #555;transition:background .2s;}
+.sensor-dot.detect{background:#e74c3c;box-shadow:0 0 6px rgba(231,76,60,.7);}
+.sensor-dot.clear{background:#2ea88a;box-shadow:0 0 6px rgba(46,168,138,.5);}
+.sensor-lbl{font-size:.6rem;color:#444;}
+.sensor-toggle{font-size:.6rem;color:#555;cursor:pointer;border:1px solid rgba(255,255,255,.08);border-radius:5px;background:rgba(0,0,0,.4);padding:3px 7px;white-space:nowrap;}
+.sensor-toggle.enabled{color:#6c63ff;border-color:rgba(108,99,255,.3);}
 
 /* GAMEPAD BODY */
 .gamepad{width:100%;max-width:480px;position:relative;background:linear-gradient(165deg,#1c1c2e 0%,#141422 60%,#0e0e1c 100%);border-radius:36px 36px 50px 50px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 25px 70px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.05),0 0 0 1px rgba(108,99,255,.08);}
@@ -144,7 +160,29 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
     <button class="mode-btn active" id="btnManual" onclick="setMode('manual')">Manual</button>
     <button class="mode-btn" id="btnAuto" onclick="setMode('auto')">Otomatis</button>
   </div>
-  <button class="mode-btn" id="btnConvToggle" onclick="toggleConveyor()" style="margin-left:auto; border-radius:10px; background:#4a4a4a; color:#fff;">Tes Konveyor: OFF</button>
+</div>
+
+<!-- CONVEYOR CONTROL ROW -->
+<div class="conv-row">
+  <span class="conv-label">Konveyor:</span>
+  <button class="conv-btn conv-btn-on" id="btnConvOn" onclick="setConveyor(1)">&#9654; ON</button>
+  <button class="conv-btn conv-btn-off active" id="btnConvOff" onclick="setConveyor(0)">&#9646;&#9646; OFF</button>
+  <div class="sensor-wrap">
+    <div class="sensor-dot" id="sensorDot" title="Status Sensor Flying Fish"></div>
+    <span class="sensor-lbl" id="sensorLbl">Sensor</span>
+    <button class="sensor-toggle enabled" id="btnSensorToggle" onclick="toggleSensor()" title="Toggle sensor ON/OFF">&#9673; Aktif</button>
+  </div>
+</div>
+
+<!-- CONVEYOR SPEED ROW -->
+<div class="conv-row" id="speedRow" style="gap:10px;">
+  <span class="conv-label">Speed:</span>
+  <input type="range" id="convSpeedSlider" min="20" max="255" value="70" step="5"
+    style="flex:1;accent-color:#2ea88a;cursor:pointer;"
+    oninput="sendConveyorSpeed(this.value)"
+    onchange="sendConveyorSpeed(this.value)">
+  <span id="convSpeedVal" style="font-size:.72rem;color:#2ea88a;font-weight:700;min-width:28px;text-align:right;">70</span>
+  <span style="font-size:.6rem;color:#333;">/255</span>
 </div>
 
 <div class="gamepad" id="gamepad">
@@ -260,7 +298,8 @@ let angles = [90, 90, 90, 90];  // local tracking
 let redoStack = { A:[], B:[], C:[], D:[], E:[], F:[], G:[], H:[], I:[], J:[] };
 let heldBtns = {};               // { 'tri': true, ... }
 let moveOrder = [];              // Track movement order
-let convState = 0;               // 0 = off, 1 = on
+let convState = 0;               // 0 = off, 1 = on (mirror dari ESP32)
+let sensorEnabledState = true;   // mirror dari ESP32
 
 const stateNames = {
   BOOT_HOME:'Boot - Menuju Home', IDLE:'Siap', RECORDING:'Recording',
@@ -305,6 +344,10 @@ function applyModeUI() {
   document.getElementById('btnGuide').classList.toggle('ctrl-disabled', !isManual);
   document.getElementById('btnDel').classList.toggle('ctrl-disabled', !isManual);
   document.getElementById('btnDelAll').classList.toggle('ctrl-disabled', !isManual);
+
+  // Konveyor ON/OFF hanya di mode manual
+  document.getElementById('btnConvOn').classList.toggle('ctrl-disabled', !isManual);
+  document.getElementById('btnConvOff').classList.toggle('ctrl-disabled', !isManual);
   // Start/Select always active
 }
 
@@ -376,6 +419,19 @@ setInterval(() => {
     sendServo(2, angles[2]);
   }
 
+  // Gripper: Square = tutup (menuju min), Circle = buka (menuju max)
+  // Keduanya continuous selama ditahan, kecepatan sama dengan servo lain
+  if (heldBtns['sq']) {
+    if (!moveOrder.includes(3)) moveOrder.push(3);
+    angles[3] = clamp(angles[3] - SPEED, ANGLE_MIN[3], ANGLE_MAX[3]);
+    sendServo(3, angles[3]);
+  }
+  if (heldBtns['circ']) {
+    if (!moveOrder.includes(3)) moveOrder.push(3);
+    angles[3] = clamp(angles[3] + SPEED, ANGLE_MIN[3], ANGLE_MAX[3]);
+    sendServo(3, angles[3]);
+  }
+
   updateAngleDisplay();
 }, 50);
 
@@ -409,29 +465,105 @@ setupHoldBtn(document.getElementById('btnTri'), 'tri');
 // Cross: elbow down
 setupHoldBtn(document.getElementById('btnCross'), 'cross');
 
-// Square: grip (move to min)
-setupHoldBtn(document.getElementById('btnSq'), 'sq', () => {
-  if (mode !== 'manual') return;
-  if (!moveOrder.includes(3)) moveOrder.push(3);
-  angles[3] = ANGLE_MIN[3];
-  sendServo(3, angles[3]);
-  updateAngleDisplay();
-});
-
-// Circle: release (move to max)
-setupHoldBtn(document.getElementById('btnCirc'), 'circ', () => {
-  if (mode !== 'manual') return;
-  if (!moveOrder.includes(3)) moveOrder.push(3);
-  angles[3] = ANGLE_MAX[3];
-  sendServo(3, angles[3]);
-  updateAngleDisplay();
-});
+// Square: gripper tutup (continuous saat ditahan - diproses di control loop)
+setupHoldBtn(document.getElementById('btnSq'), 'sq');
+// Circle: gripper buka (continuous saat ditahan - diproses di control loop)
+setupHoldBtn(document.getElementById('btnCirc'), 'circ');
 
 // ============================================================
 // BUMPERS: L1 = Undo, R1 = Redo
 // ============================================================
 setupHoldBtn(document.getElementById('btnL1'), 'l1', () => doUndo());
 setupHoldBtn(document.getElementById('btnR1'), 'r1', () => doRedo());
+
+// ============================================================
+// CONVEYOR CONTROLS
+// ============================================================
+async function setConveyor(on) {
+  if (serverState === 'ESTOP') { showToast('E-STOP aktif!', true); return; }
+  if (mode !== 'manual') { showToast('Mode harus Manual', true); return; }
+
+  const r = await fetch('/conveyor?state=' + on);
+  const txt = await r.text();
+  if (r.ok) {
+    convState = on;
+    updateConveyorUI();
+    showToast(txt);
+  } else {
+    showToast(txt, true);
+  }
+}
+
+function updateConveyorUI() {
+  const btnOn  = document.getElementById('btnConvOn');
+  const btnOff = document.getElementById('btnConvOff');
+  btnOn.classList.toggle('active', convState === 1);
+  btnOff.classList.toggle('active', convState === 0);
+}
+
+// ============================================================
+// CONVEYOR SPEED
+// ============================================================
+let convSpeedLocal = 70;   // 0-255, mirror dari ESP32
+let speedSendTimer = null;
+
+function onSpeedSlide(val) {
+  convSpeedLocal = parseInt(val);
+  document.getElementById('convSpeedVal').textContent = convSpeedLocal;
+}
+
+async function sendConveyorSpeed(val) {
+  convSpeedLocal = parseInt(val);
+  document.getElementById('convSpeedVal').textContent = convSpeedLocal;
+  clearTimeout(speedSendTimer);
+  speedSendTimer = setTimeout(async () => {
+    try {
+      const r = await fetch('/conveyorspeed?val=' + convSpeedLocal);
+      if (!r.ok) showToast(await r.text(), true);
+    } catch(e) {}
+  }, 100); // debounce 100ms
+}
+
+// ============================================================
+// SENSOR TOGGLE
+// ============================================================
+async function toggleSensor() {
+  if (serverState === 'ESTOP') { showToast('E-STOP aktif!', true); return; }
+  const newEnable = sensorEnabledState ? 0 : 1;
+  const r = await fetch('/sensor?enable=' + newEnable);
+  if (r.ok) {
+    sensorEnabledState = (newEnable === 1);
+    updateSensorUI(sensorEnabledState, false);
+    showToast(sensorEnabledState ? 'Sensor Flying Fish AKTIF' : 'Sensor Flying Fish NONAKTIF');
+  } else {
+    showToast(await r.text(), true);
+  }
+}
+
+function updateSensorUI(enabled, detected) {
+  const dot  = document.getElementById('sensorDot');
+  const lbl  = document.getElementById('sensorLbl');
+  const btn  = document.getElementById('btnSensorToggle');
+
+  if (!enabled) {
+    dot.className = 'sensor-dot';
+    lbl.textContent = 'Sensor';
+    btn.className   = 'sensor-toggle';
+    btn.textContent = '\u25CB Nonaktif';
+  } else if (detected) {
+    dot.className   = 'sensor-dot detect';
+    lbl.style.color = '#e74c3c';
+    lbl.textContent = 'Objek!';
+    btn.className   = 'sensor-toggle enabled';
+    btn.textContent = '\u25D9 Aktif';
+  } else {
+    dot.className   = 'sensor-dot clear';
+    lbl.style.color = '#2ea88a';
+    lbl.textContent = 'Clear';
+    btn.className   = 'sensor-toggle enabled';
+    btn.textContent = '\u25D9 Aktif';
+  }
+}
 
 // ============================================================
 // KEYFRAME ACTIONS
@@ -513,21 +645,9 @@ async function doPlay() {
 async function doStop() {
   const r = await fetch('/stop');
   showToast(await r.text(), !r.ok);
-}
-
-async function toggleConveyor() {
-  if (serverState === 'ESTOP') { showToast('E-STOP aktif!', true); return; }
-  convState = convState === 0 ? 1 : 0;
-  const btn = document.getElementById('btnConvToggle');
-  
-  const r = await fetch('/conveyor?state=' + convState);
-  if (r.ok) {
-    btn.textContent = 'Tes Konveyor: ' + (convState ? 'ON' : 'OFF');
-    btn.style.background = convState ? '#2ea88a' : '#4a4a4a';
-  } else {
-    convState = convState === 0 ? 1 : 0; // revert on fail
-    showToast(await r.text(), true);
-  }
+  // Sync conveyor state: stop selalu matikan konveyor
+  convState = 0;
+  updateConveyorUI();
 }
 
 // ============================================================
@@ -556,6 +676,27 @@ async function updateStatus() {
     const d = await r.json();
     serverState = d.state;
     const sName = stateNames[d.state] || d.state;
+
+    // Sync conveyor & sensor state dari server
+    if (typeof d.conveyorOn !== 'undefined') {
+      convState = d.conveyorOn ? 1 : 0;
+      updateConveyorUI();
+    }
+    if (typeof d.conveyorSpeed !== 'undefined' && d.conveyorSpeed !== convSpeedLocal) {
+      convSpeedLocal = d.conveyorSpeed;
+      const sl = document.getElementById('convSpeedSlider');
+      if (sl && document.activeElement !== sl) {
+        sl.value = convSpeedLocal;
+        document.getElementById('convSpeedVal').textContent = convSpeedLocal;
+      }
+    }
+    if (typeof d.sensorEnabled !== 'undefined') {
+      sensorEnabledState = d.sensorEnabled;
+    }
+    if (typeof d.sensorDetect !== 'undefined') {
+      updateSensorUI(sensorEnabledState, d.sensorDetect);
+    }
+
     document.getElementById('statusBar').innerHTML =
       'State: <span class="s-state">' + sName + '</span><br>' +
       '<span class="s-seq">A:' + (d.lenA||0) + ' B:' + (d.lenB||0) + ' C:' + (d.lenC||0) + ' D:' + (d.lenD||0) + ' E:' + (d.lenE||0) + ' F:' + (d.lenF||0) + ' G:' + (d.lenG||0) + ' H:' + (d.lenH||0) + ' I:' + (d.lenI||0) + ' J:' + (d.lenJ||0) + '</span>' +
@@ -577,6 +718,7 @@ async function updateStatus() {
 setInterval(updateStatus, 500);
 updateStatus();
 applyModeUI();
+updateConveyorUI();
 </script>
 </body>
 </html>)rawliteral";
