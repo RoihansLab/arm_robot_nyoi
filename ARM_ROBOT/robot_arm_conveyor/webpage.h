@@ -49,7 +49,6 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
 
 /* GAMEPAD BODY */
 .gamepad{width:100%;max-width:480px;position:relative;background:linear-gradient(165deg,#1c1c2e 0%,#141422 60%,#0e0e1c 100%);border-radius:36px 36px 50px 50px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 25px 70px rgba(0,0,0,.9),inset 0 1px 0 rgba(255,255,255,.05),0 0 0 1px rgba(108,99,255,.08);}
-/* Grips */
 .grip-l,.grip-r{position:absolute;bottom:-22px;width:36%;height:50px;background:linear-gradient(165deg,#1a1a2c,#0e0e1c);border:1px solid rgba(255,255,255,0.04);border-top:none;box-shadow:0 10px 25px rgba(0,0,0,.7);}
 .grip-l{left:14px;border-radius:0 0 28px 28px;}
 .grip-r{right:14px;border-radius:0 0 28px 28px;}
@@ -65,17 +64,15 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
 .bL1.pressed,.bR1.pressed{background:linear-gradient(to bottom,#6c63ff,#5249d0);color:#fff;box-shadow:0 0 12px rgba(108,99,255,.5);}
 .bL1:active,.bR1:active{transform:scaleY(.88);}
 
-/* SEQ TABS in center bumper area */
+/* SEQ TABS in center bumper area (3 sequences: A, B, C) */
 .seq-area{display:flex;flex-direction:column;align-items:center;gap:3px;padding-bottom:2px;}
 .seq-lbl{font-size:.52rem;color:#333;text-transform:uppercase;letter-spacing:.5px;}
-.seq-tabs{display:flex;gap:4px;}
-.seq-tab{width:34px;height:22px;border:1px solid rgba(255,255,255,.08);border-radius:4px;background:rgba(0,0,0,.4);color:#444;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .15s;}
-.seq-tab.active{background:#6c63ff;color:#fff;border-color:#6c63ff;box-shadow:0 0 8px rgba(108,99,255,.4);}
+.seq-tabs{display:flex;gap:6px;}
+.seq-tab{width:42px;height:24px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(0,0,0,.4);color:#666;font-size:.75rem;font-weight:700;cursor:pointer;transition:all .15s;}
+.seq-tab.active{background:#6c63ff;color:#fff;border-color:#6c63ff;box-shadow:0 0 10px rgba(108,99,255,.5);}
 
 /* INNER PANEL */
 .inner{background:linear-gradient(to bottom,#161624,#101018);border-radius:0 0 30px 30px;border:1px solid rgba(255,255,255,.04);border-top:1.5px solid rgba(255,255,255,.03);padding:14px 10px 16px;}
-
-/* CONTROLS ROW */
 .ctrl-row{display:flex;justify-content:space-between;align-items:center;gap:4px;}
 
 /* D-PAD */
@@ -120,7 +117,7 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
 
 /* BOTTOM */
 .btm-row{padding:10px 16px 0;display:flex;justify-content:center;}
-.del-btn{background:linear-gradient(to right,rgba(231,76,60,.12),rgba(231,76,60,.04));border:1px solid rgba(231,76,60,.2);color:#e74c3c;border-radius:8px;padding:7px 22px;font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
+.del-btn{background:linear-gradient(to right,rgba(231,76,60,.12),rgba(231,76,60,.04));border:1px solid rgba(231,76,60,.2);color:#e74c3c;border-radius:8px;padding:7px 18px;font-size:.65rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;transition:all .15s;}
 .del-btn:hover{background:rgba(231,76,60,.2);border-color:rgba(231,76,60,.4);}
 .del-btn:active{transform:scale(.96);}
 
@@ -133,14 +130,28 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
 /* DISABLED overlay */
 .ctrl-disabled{opacity:.2;pointer-events:none;}
 
-/* FRAME LIST */
-.frame-panel{width:100%;max-width:480px;margin-top:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:8px 12px;}
-.frame-panel-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-.fp-title{font-size:.62rem;color:#555;text-transform:uppercase;letter-spacing:.5px;}
-.fp-count{font-size:.62rem;color:#6c63ff;}
-.frame-list{font-size:.62rem;color:#444;max-height:90px;overflow-y:auto;line-height:1.8;}
-.frame-list .fl-item{border-bottom:1px solid rgba(255,255,255,.03);padding:1px 0;}
-.frame-list .fl-item:last-child{border:none;}
+/* FRAME LIST & SELECTION */
+.frame-panel{width:100%;max-width:480px;margin-top:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:10px 12px;}
+.frame-panel-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.fp-title{font-size:.65rem;color:#777;text-transform:uppercase;letter-spacing:.5px;font-weight:700;}
+.fp-count{font-size:.65rem;color:#6c63ff;font-weight:700;}
+
+.frame-actions-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);border-radius:8px;padding:6px 10px;margin-bottom:8px;font-size:.65rem;}
+.sel-info{color:#aaa;}
+.sel-info b{color:#80ffdf;}
+.btn-del-sel{background:#3a1a1a;color:#e74c3c;border:1px solid rgba(231,76,60,0.4);border-radius:6px;padding:3px 10px;font-size:.62rem;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-del-sel:hover:not(:disabled){background:#e74c3c;color:#fff;}
+.btn-del-sel:disabled{opacity:.3;cursor:not-allowed;}
+
+.frame-list{font-size:.62rem;color:#777;max-height:130px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;}
+.fl-item{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,0.02);border:1px solid transparent;cursor:pointer;transition:all .15s;}
+.fl-item:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.08);}
+.fl-item.selected{background:rgba(108,99,255,0.18);border-color:#6c63ff;color:#fff;box-shadow:0 0 8px rgba(108,99,255,0.3);}
+.fl-data{display:flex;align-items:center;gap:8px;}
+.fl-num{font-weight:700;color:#6c63ff;min-width:22px;}
+.fl-item.selected .fl-num{color:#80ffdf;}
+.fl-btn-del{background:transparent;border:none;color:#555;font-size:.75rem;cursor:pointer;padding:2px 6px;border-radius:4px;transition:all .15s;}
+.fl-btn-del:hover{color:#e74c3c;background:rgba(231,76,60,0.15);}
 
 @media(max-width:360px){
   .dpad{width:96px;height:96px;}
@@ -174,15 +185,13 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
   </div>
 </div>
 
-<!-- CONVEYOR SPEED ROW -->
-<div class="conv-row" id="speedRow" style="gap:10px;">
-  <span class="conv-label">Speed:</span>
-  <input type="range" id="convSpeedSlider" min="20" max="255" value="70" step="5"
-    style="flex:1;accent-color:#2ea88a;cursor:pointer;"
-    oninput="sendConveyorSpeed(this.value)"
-    onchange="sendConveyorSpeed(this.value)">
-  <span id="convSpeedVal" style="font-size:.72rem;color:#2ea88a;font-weight:700;min-width:28px;text-align:right;">70</span>
-  <span style="font-size:.6rem;color:#333;">/255</span>
+<!-- CONVEYOR SPEED DISPLAY (STATIS 60 PWM) -->
+<div class="conv-row" id="speedRow" style="justify-content:space-between;align-items:center;">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="conv-label">Speed Motor:</span>
+    <span style="font-size:.75rem;color:#2ea88a;font-weight:700;background:rgba(46,168,138,.12);border:1px solid rgba(46,168,138,.3);padding:2px 10px;border-radius:6px;">60 PWM (Statis)</span>
+  </div>
+  <span style="font-size:.62rem;color:#555;">Kickstart: 50 ms</span>
 </div>
 
 <div class="gamepad" id="gamepad">
@@ -201,13 +210,6 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
         <button class="seq-tab active" id="tabA" onclick="selSeq('A')">A</button>
         <button class="seq-tab" id="tabB" onclick="selSeq('B')">B</button>
         <button class="seq-tab" id="tabC" onclick="selSeq('C')">C</button>
-        <button class="seq-tab" id="tabD" onclick="selSeq('D')">D</button>
-        <button class="seq-tab" id="tabE" onclick="selSeq('E')">E</button>
-        <button class="seq-tab" id="tabF" onclick="selSeq('F')">F</button>
-        <button class="seq-tab" id="tabG" onclick="selSeq('G')">G</button>
-        <button class="seq-tab" id="tabH" onclick="selSeq('H')">H</button>
-        <button class="seq-tab" id="tabI" onclick="selSeq('I')">I</button>
-        <button class="seq-tab" id="tabJ" onclick="selSeq('J')">J</button>
       </div>
     </div>
     <div class="bgrp bgrp-r">
@@ -258,10 +260,10 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
 
     </div><!-- end ctrl-row -->
 
-    <!-- DELETE ALL -->
+    <!-- DELETE CUR SEQ & RESET -->
     <div class="btm-row" style="gap:10px;">
       <button class="del-btn" id="btnDel" onclick="doDeleteCurSeq()">&#128465; Hapus Seq</button>
-      <button class="del-btn" id="btnDelAll" onclick="doDeleteAll()" style="color:#f39c12;border-color:rgba(243,156,18,0.3);background:rgba(243,156,18,0.1);">Reset Semua</button>
+      <button class="del-btn" id="btnDelAll" onclick="doDeleteAll()" style="color:#f39c12;border-color:rgba(243,156,18,0.3);background:rgba(243,156,18,0.1);">Reset Semua (A-C)</button>
     </div>
 
   </div><!-- end inner -->
@@ -275,14 +277,20 @@ body{display:flex;flex-direction:column;align-items:center;padding:8px 6px 80px;
   <div class="ang-item"><span class="ang-lbl">Gripper</span><span class="ang-val" id="angG">90</span></div>
 </div>
 
-<!-- FRAME LIST -->
+<!-- FRAME LIST & SELECT/DELETE SPECIFIC FRAME -->
 <div class="frame-panel">
   <div class="frame-panel-hdr">
     <span class="fp-title" id="fpTitle">Seq A Frames</span>
     <span class="fp-count" id="fpCount">0 frame</span>
   </div>
-  <div class="frame-list" id="frameList"><div style="color:#2a2a3a">Belum ada frame</div></div>
-</div><script>
+  <div class="frame-actions-bar">
+    <span class="sel-info" id="selFrameInfo">Pilih frame di bawah untuk preview / hapus</span>
+    <button class="btn-del-sel" id="btnDelSelected" onclick="doDeleteSelectedFrame()" disabled>&#128465; Hapus Frame Terpilih</button>
+  </div>
+  <div class="frame-list" id="frameList"><div style="color:#444">Belum ada frame</div></div>
+</div>
+
+<script>
 // ============================================================
 // CONFIG (mirror dari config.h)
 // ============================================================
@@ -294,8 +302,10 @@ const ANGLE_MAX = [180, 160, 160, 120];
 // ============================================================
 let mode = 'manual';
 let curSeq = 'A';
+let selectedFrameIdx = -1;       // Indeks frame yang sedang dipilih
 let angles = [90, 90, 90, 90];  // local tracking
-let redoStack = { A:[], B:[], C:[], D:[], E:[], F:[], G:[], H:[], I:[], J:[] };
+let redoStack = { A:[], B:[], C:[] };
+let lastFrames = { A:[], B:[], C:[] };
 let heldBtns = {};               // { 'tri': true, ... }
 let moveOrder = [];              // Track movement order
 let convState = 0;               // 0 = off, 1 = on (mirror dari ESP32)
@@ -303,10 +313,8 @@ let sensorEnabledState = true;   // mirror dari ESP32
 
 const stateNames = {
   BOOT_HOME:'Boot - Menuju Home', IDLE:'Siap', RECORDING:'Recording',
-  PLAY_A:'Playing Seq A', PLAY_B:'Playing Seq B', PLAY_C:'Playing Seq C', PLAY_D:'Playing Seq D',
-  PLAY_E:'Playing Seq E', PLAY_F:'Playing Seq F', PLAY_G:'Playing Seq G', PLAY_H:'Playing Seq H',
-  PLAY_I:'Playing Seq I', PLAY_J:'Playing Seq J',
-  CONVEYOR_RUN:'Konveyor Berjalan', ESTOP:'!!! E-STOP !!!'
+  PLAY_A:'Playing Seq A', PLAY_B:'Playing Seq B', PLAY_C:'Playing Seq C',
+  CONVEYOR_RUN:'Konveyor Berjalan (Menunggu Objek)', ESTOP:'!!! E-STOP !!!'
 };
 let serverState = 'IDLE';
 
@@ -330,33 +338,40 @@ function setMode(m) {
   document.getElementById('btnManual').classList.toggle('active', m === 'manual');
   document.getElementById('btnAuto').classList.toggle('active', m === 'auto');
   applyModeUI();
+  if (m === 'auto') {
+    if (serverState === 'IDLE') {
+      doPlay();
+    }
+  } else {
+    if (serverState === 'PLAY_SEQ' || serverState === 'CONVEYOR_RUN' || serverState.startsWith('PLAY_')) {
+      doStop();
+    }
+  }
 }
 
 function applyModeUI() {
   const isManual = mode === 'manual';
-  // Manual controls: d-pad + face buttons
   document.getElementById('dpadWrapper').classList.toggle('ctrl-disabled', !isManual);
   document.getElementById('facePad').classList.toggle('ctrl-disabled', !isManual);
   
-  // Record/Edit controls should be active ONLY in manual mode
   document.getElementById('btnL1').classList.toggle('ctrl-disabled', !isManual);
   document.getElementById('btnR1').classList.toggle('ctrl-disabled', !isManual);
   document.getElementById('btnGuide').classList.toggle('ctrl-disabled', !isManual);
   document.getElementById('btnDel').classList.toggle('ctrl-disabled', !isManual);
   document.getElementById('btnDelAll').classList.toggle('ctrl-disabled', !isManual);
+  document.getElementById('btnDelSelected').classList.toggle('ctrl-disabled', !isManual);
 
-  // Konveyor ON/OFF hanya di mode manual
   document.getElementById('btnConvOn').classList.toggle('ctrl-disabled', !isManual);
   document.getElementById('btnConvOff').classList.toggle('ctrl-disabled', !isManual);
-  // Start/Select always active
 }
 
 // ============================================================
-// SEQUENCE TAB
+// SEQUENCE TAB (A, B, C)
 // ============================================================
 function selSeq(s) {
   curSeq = s;
-  const seqs = ['A','B','C','D','E','F','G','H','I','J'];
+  selectedFrameIdx = -1; // reset pilihan saat ganti sequence
+  const seqs = ['A','B','C'];
   seqs.forEach(sq => {
       let el = document.getElementById('tab' + sq);
       if (el) el.classList.toggle('active', sq === s);
@@ -382,7 +397,6 @@ function clamp(v, mn, mx) { return Math.min(Math.max(v, mn), mx); }
 // CONTROL LOOP (50ms)
 // ============================================================
 const SPEED = 2.2; // deg/tick
-const DEADZONE = 0.07;
 
 setInterval(() => {
   if (mode !== 'manual') return;
@@ -419,8 +433,7 @@ setInterval(() => {
     sendServo(2, angles[2]);
   }
 
-  // Gripper: Square = tutup (menuju min), Circle = buka (menuju max)
-  // Keduanya continuous selama ditahan, kecepatan sama dengan servo lain
+  // Gripper: Square = tutup, Circle = buka
   if (heldBtns['sq']) {
     if (!moveOrder.includes(3)) moveOrder.push(3);
     angles[3] = clamp(angles[3] - SPEED, ANGLE_MIN[3], ANGLE_MAX[3]);
@@ -443,7 +456,7 @@ function updateAngleDisplay() {
 }
 
 // ============================================================
-// FACE BUTTONS & D-PAD (press & hold for continuous)
+// FACE BUTTONS & D-PAD
 // ============================================================
 function setupHoldBtn(el, key, onPress) {
   const press = e => { e.preventDefault(); heldBtns[key] = true; el.classList.add('held'); if(onPress) onPress(); };
@@ -460,19 +473,13 @@ setupHoldBtn(document.getElementById('btnDown'), 'down');
 setupHoldBtn(document.getElementById('btnLeft'), 'left');
 setupHoldBtn(document.getElementById('btnRight'), 'right');
 
-// Triangle: elbow up
+// Face buttons
 setupHoldBtn(document.getElementById('btnTri'), 'tri');
-// Cross: elbow down
 setupHoldBtn(document.getElementById('btnCross'), 'cross');
-
-// Square: gripper tutup (continuous saat ditahan - diproses di control loop)
 setupHoldBtn(document.getElementById('btnSq'), 'sq');
-// Circle: gripper buka (continuous saat ditahan - diproses di control loop)
 setupHoldBtn(document.getElementById('btnCirc'), 'circ');
 
-// ============================================================
-// BUMPERS: L1 = Undo, R1 = Redo
-// ============================================================
+// Bumpers
 setupHoldBtn(document.getElementById('btnL1'), 'l1', () => doUndo());
 setupHoldBtn(document.getElementById('btnR1'), 'r1', () => doRedo());
 
@@ -499,29 +506,6 @@ function updateConveyorUI() {
   const btnOff = document.getElementById('btnConvOff');
   btnOn.classList.toggle('active', convState === 1);
   btnOff.classList.toggle('active', convState === 0);
-}
-
-// ============================================================
-// CONVEYOR SPEED
-// ============================================================
-let convSpeedLocal = 70;   // 0-255, mirror dari ESP32
-let speedSendTimer = null;
-
-function onSpeedSlide(val) {
-  convSpeedLocal = parseInt(val);
-  document.getElementById('convSpeedVal').textContent = convSpeedLocal;
-}
-
-async function sendConveyorSpeed(val) {
-  convSpeedLocal = parseInt(val);
-  document.getElementById('convSpeedVal').textContent = convSpeedLocal;
-  clearTimeout(speedSendTimer);
-  speedSendTimer = setTimeout(async () => {
-    try {
-      const r = await fetch('/conveyorspeed?val=' + convSpeedLocal);
-      if (!r.ok) showToast(await r.text(), true);
-    } catch(e) {}
-  }, 100); // debounce 100ms
 }
 
 // ============================================================
@@ -566,15 +550,12 @@ function updateSensorUI(enabled, detected) {
 }
 
 // ============================================================
-// KEYFRAME ACTIONS
+// KEYFRAME ACTIONS (Save, Undo, Redo, Select & Delete Frame)
 // ============================================================
-let lastFrames = { A:[], B:[], C:[], D:[], E:[], F:[], G:[], H:[], I:[], J:[] };
-
 async function doSaveFrame() {
   if (serverState === 'ESTOP') { showToast('E-STOP aktif!', true); return; }
   const hold = parseInt(document.getElementById('holdMs').value) || 500;
   
-  // Lengkapi order dengan servo yang tidak ditekan
   let finalOrder = [...moveOrder];
   for(let i=0; i<4; i++) {
     if(!finalOrder.includes(i)) finalOrder.push(i);
@@ -598,24 +579,81 @@ async function doUndo() {
   }
   const r = await fetch('/undo?seq=' + curSeq);
   showToast(await r.text(), !r.ok);
-  if (r.ok) updateStatus();
+  if (r.ok) {
+    if (selectedFrameIdx >= (frames ? frames.length - 1 : 0)) {
+      selectedFrameIdx = -1;
+    }
+    updateStatus();
+  }
 }
 
 async function doRedo() {
   if (serverState === 'ESTOP') { showToast('E-STOP aktif!', true); return; }
   const stack = redoStack[curSeq];
-  if (stack.length === 0) { showToast('Tidak ada redo tersedia', true); return; }
+  if (!stack || stack.length === 0) { showToast('Tidak ada redo tersedia', true); return; }
   const frame = stack.pop();
-  // Move servos to that frame position
   for (let i = 0; i < 4; i++) {
     angles[i] = frame.a[i];
     await sendServo(i, frame.a[i]);
   }
   updateAngleDisplay();
   const hold = frame.h;
-  const r = await fetch('/save?seq=' + curSeq + '&hold=' + hold);
+  const order = (frame.o && frame.o.length === 4) ? frame.o.join(',') : '0,1,2,3';
+  const r = await fetch('/save?seq=' + curSeq + '&hold=' + hold + '&order=' + order);
   showToast('Redo: ' + (await r.text()), !r.ok);
   if (r.ok) updateStatus();
+}
+
+// Memilih frame tertentu dan menggerakkan robot ke posisi frame tersebut
+async function selectFrame(idx) {
+  if (mode !== 'manual') return;
+  const frames = lastFrames[curSeq];
+  if (!frames || idx < 0 || idx >= frames.length) return;
+  selectedFrameIdx = idx;
+  const f = frames[idx];
+  for (let i = 0; i < 4; i++) {
+    angles[i] = f.a[i];
+    await sendServo(i, f.a[i]);
+  }
+  updateAngleDisplay();
+  showToast('Frame #' + (idx + 1) + ' dipilih & robot digerakkan');
+  renderFrames();
+}
+
+// Menghapus frame terpilih
+async function doDeleteSelectedFrame() {
+  if (serverState === 'ESTOP') { showToast('E-STOP aktif!', true); return; }
+  if (selectedFrameIdx < 0) {
+    showToast('Pilih frame di daftar terlebih dahulu', true);
+    return;
+  }
+  if (!confirm('Hapus Frame #' + (selectedFrameIdx + 1) + ' dari Seq ' + curSeq + '?')) return;
+  
+  const r = await fetch('/deleteframe?seq=' + curSeq + '&frame=' + selectedFrameIdx);
+  const txt = await r.text();
+  showToast(txt, !r.ok);
+  if (r.ok) {
+    selectedFrameIdx = -1;
+    redoStack[curSeq] = [];
+    updateStatus();
+  }
+}
+
+// Menghapus frame tertentu via tombol silang (✕)
+async function doDeleteSpecificFrame(idx, e) {
+  if (e) e.stopPropagation();
+  if (serverState === 'ESTOP') { showToast('E-STOP aktif!', true); return; }
+  if (!confirm('Hapus Frame #' + (idx + 1) + ' dari Seq ' + curSeq + '?')) return;
+
+  const r = await fetch('/deleteframe?seq=' + curSeq + '&frame=' + idx);
+  const txt = await r.text();
+  showToast(txt, !r.ok);
+  if (r.ok) {
+    if (selectedFrameIdx === idx) selectedFrameIdx = -1;
+    else if (selectedFrameIdx > idx) selectedFrameIdx--;
+    redoStack[curSeq] = [];
+    updateStatus();
+  }
 }
 
 async function doDeleteCurSeq() {
@@ -623,16 +661,21 @@ async function doDeleteCurSeq() {
   if (!confirm('Hapus SEMUA frame Seq ' + curSeq + '?')) return;
   const r = await fetch('/clear?seq=' + curSeq);
   showToast(await r.text(), !r.ok);
-  if (r.ok) { redoStack[curSeq] = []; updateStatus(); }
+  if (r.ok) { 
+    selectedFrameIdx = -1;
+    redoStack[curSeq] = []; 
+    updateStatus(); 
+  }
 }
 
 async function doDeleteAll() {
   if (serverState === 'ESTOP') { showToast('E-STOP aktif!', true); return; }
-  if (!confirm('Hapus SEMUA SEQUENCE (A sampai J)?')) return;
+  if (!confirm('Hapus SEMUA SEQUENCE (A, B, dan C)?')) return;
   const r = await fetch('/clearAll');
   showToast(await r.text(), !r.ok);
   if (r.ok) { 
-    redoStack = { A:[], B:[], C:[], D:[], E:[], F:[], G:[], H:[], I:[], J:[] }; 
+    selectedFrameIdx = -1;
+    redoStack = { A:[], B:[], C:[] }; 
     updateStatus(); 
   }
 }
@@ -645,7 +688,6 @@ async function doPlay() {
 async function doStop() {
   const r = await fetch('/stop');
   showToast(await r.text(), !r.ok);
-  // Sync conveyor state: stop selalu matikan konveyor
   convState = 0;
   updateConveyorUI();
 }
@@ -655,15 +697,39 @@ async function doStop() {
 // ============================================================
 function renderFrames() {
   const frames = lastFrames[curSeq];
-  const ul = document.getElementById('frameList');
+  const listEl = document.getElementById('frameList');
   const cnt = document.getElementById('fpCount');
-  cnt.textContent = (frames ? frames.length : 0) + ' frame';
-  if (!frames || frames.length === 0) {
-    ul.innerHTML = '<div style="color:#2a2a3a">Belum ada frame</div>'; return;
+  const selInfo = document.getElementById('selFrameInfo');
+  const btnDelSel = document.getElementById('btnDelSelected');
+  
+  const count = (frames ? frames.length : 0);
+  cnt.textContent = count + ' frame';
+
+  if (selectedFrameIdx >= 0 && selectedFrameIdx < count) {
+    selInfo.innerHTML = 'Frame Terpilih: <b>#' + (selectedFrameIdx + 1) + '</b>';
+    btnDelSel.disabled = false;
+  } else {
+    selectedFrameIdx = -1;
+    selInfo.textContent = 'Klik frame di bawah untuk preview & memilih';
+    btnDelSel.disabled = true;
   }
-  ul.innerHTML = frames.map((f,i) =>
-    '<div class="fl-item">#' + (i+1) + ' [' + f.a.join(',') + '] hold:' + f.h + 'ms (Ord:' + (f.o ? f.o.join(',') : '') + ')</div>'
-  ).join('');
+
+  if (!frames || frames.length === 0) {
+    listEl.innerHTML = '<div style="color:#444;padding:6px;">Belum ada frame pada Seq ' + curSeq + '</div>';
+    return;
+  }
+
+  listEl.innerHTML = frames.map((f, i) => {
+    const isSel = (i === selectedFrameIdx);
+    return '<div class="fl-item' + (isSel ? ' selected' : '') + '" onclick="selectFrame(' + i + ')">' +
+      '<div class="fl-data">' +
+        '<span class="fl-num">#' + (i + 1) + '</span>' +
+        '<span>[' + f.a.join(', ') + ']&deg;</span>' +
+        '<span style="color:#666">h:' + f.h + 'ms</span>' +
+      '</div>' +
+      '<button class="fl-btn-del" title="Hapus frame ini" onclick="doDeleteSpecificFrame(' + i + ', event)">&#10005;</button>' +
+    '</div>';
+  }).join('');
 }
 
 // ============================================================
@@ -682,14 +748,6 @@ async function updateStatus() {
       convState = d.conveyorOn ? 1 : 0;
       updateConveyorUI();
     }
-    if (typeof d.conveyorSpeed !== 'undefined' && d.conveyorSpeed !== convSpeedLocal) {
-      convSpeedLocal = d.conveyorSpeed;
-      const sl = document.getElementById('convSpeedSlider');
-      if (sl && document.activeElement !== sl) {
-        sl.value = convSpeedLocal;
-        document.getElementById('convSpeedVal').textContent = convSpeedLocal;
-      }
-    }
     if (typeof d.sensorEnabled !== 'undefined') {
       sensorEnabledState = d.sensorEnabled;
     }
@@ -699,16 +757,17 @@ async function updateStatus() {
 
     document.getElementById('statusBar').innerHTML =
       'State: <span class="s-state">' + sName + '</span><br>' +
-      '<span class="s-seq">A:' + (d.lenA||0) + ' B:' + (d.lenB||0) + ' C:' + (d.lenC||0) + ' D:' + (d.lenD||0) + ' E:' + (d.lenE||0) + ' F:' + (d.lenF||0) + ' G:' + (d.lenG||0) + ' H:' + (d.lenH||0) + ' I:' + (d.lenI||0) + ' J:' + (d.lenJ||0) + '</span>' +
-      '<br>[' + d.angles.join('/') + '] deg';
+      '<span class="s-seq">A: ' + (d.lenA||0) + ' &bull; B: ' + (d.lenB||0) + ' &bull; C: ' + (d.lenC||0) + ' frame</span>' +
+      '[' + d.angles.join(' / ') + '] deg';
 
-    // sync local angles from server (when not dragging/pressing)
-    if (!heldBtns['up'] && !heldBtns['down'] && !heldBtns['left'] && !heldBtns['right'] && !heldBtns['tri'] && !heldBtns['cross'] && !heldBtns['sq'] && !heldBtns['circ']) {
+    // Sync sudut saat tidak ditekan
+    if (!heldBtns['up'] && !heldBtns['down'] && !heldBtns['left'] && !heldBtns['right'] && 
+        !heldBtns['tri'] && !heldBtns['cross'] && !heldBtns['sq'] && !heldBtns['circ']) {
       for (let i = 0; i < 4; i++) angles[i] = d.angles[i];
       updateAngleDisplay();
     }
 
-    ['A','B','C','D','E','F','G','H','I','J'].forEach(sq => {
+    ['A','B','C'].forEach(sq => {
         if (d['frames' + sq]) lastFrames[sq] = d['frames' + sq];
     });
     renderFrames();

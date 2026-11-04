@@ -21,7 +21,7 @@ const int PIN_ENA = 25;   // -1 jika ENA masih dijumper (no speed control)
 const int  PWM_CHANNEL   = 0;    // LEDC channel (0-15)
 const int  PWM_FREQ      = 1000; // Hz
 const int  PWM_BITS      = 8;    // resolusi 8-bit => duty 0-255
-const uint8_t CONVEYOR_SPEED_DEFAULT = 70;  // default start speed (0-255)
+const uint8_t CONVEYOR_SPEED_DEFAULT = 60;  // statis 60 PWM (setelah kickstart)
 
 // -- Batas Sudut Aman per Servo (UBAH SETELAH KALIBRASI) ------
 //   indeks: 0=base  1=shoulder  2=elbow  3=gripper
@@ -47,7 +47,7 @@ const int STEP_MS  = 15;   // interval antar langkah (ms)
 
 // -- Recording ------------------------------------------------
 const int MAX_FRAMES  = 50;  // maks frame per sequence
-const int NUM_SEQ     = 10;  // jumlah sequence (1-10)
+const int NUM_SEQ     = 3;   // jumlah sequence (A, B, C)
 
 // -- Tipe data frame (didefinisikan di sini agar semua header bisa pakai) --
 struct Frame {

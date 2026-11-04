@@ -39,6 +39,7 @@ unsigned long servoDelayStart = 0; // mulai delay antar servo
 bool     waitingServoDelay = false;
 bool     inHold       = false;
 unsigned long tConv   = 0;   // millis saat konveyor dinyalakan
+bool     sensorClearNeeded = false; // flag tunggu sensor bebas sebelum deteksi objek baru
 
 // =============================================================
 //  Web Server
@@ -72,14 +73,14 @@ void handleServo() {
   sendOK("ok");
 }
 
-// ── GET /save?seq=A|B|C|D&hold=ms ────────────────────────────────
+// ── GET /save?seq=A|B|C&hold=ms ────────────────────────────────
 void handleSave() {
   if (isEstopBlocked()) return;
   String seqName = server.arg("seq");
   uint8_t idx = 0;
   if (seqName.length() > 0) {
       char c = seqName.charAt(0);
-      if (c >= 'A' && c <= 'J') idx = c - 'A';
+      if (c >= 'A' && c < 'A' + NUM_SEQ) idx = c - 'A';
   }
   
   if (seqLen[idx] >= MAX_FRAMES) {
@@ -108,6 +109,30 @@ void handleSave() {
   sendOK("Frame " + String(seqLen[idx]) + " tersimpan ke Seq " + seqName);
 }
 
+// ── GET /deleteframe?seq=A|B|C&frame=idx ─────────────────────────
+void handleDeleteFrame() {
+  if (isEstopBlocked()) return;
+  String seqName = server.arg("seq");
+  uint8_t idx = 0;
+  if (seqName.length() > 0) {
+      char c = seqName.charAt(0);
+      if (c >= 'A' && c < 'A' + NUM_SEQ) idx = c - 'A';
+  }
+  if (!server.hasArg("frame")) {
+    sendErr("Parameter frame diperlukan"); return;
+  }
+  int fIdx = server.arg("frame").toInt();
+  if (fIdx < 0 || fIdx >= seqLen[idx]) {
+    sendErr("Indeks frame tidak valid"); return;
+  }
+  for (int i = fIdx; i < seqLen[idx] - 1; i++) {
+    seq[idx][i] = seq[idx][i + 1];
+  }
+  seqLen[idx]--;
+  saveSeq(idx);
+  sendOK("Frame " + String(fIdx + 1) + " dihapus dari Seq " + seqName);
+}
+
 // ── GET /undo?seq= ───────────────────────────────────────────
 void handleUndo() {
   if (isEstopBlocked()) return;
@@ -115,7 +140,7 @@ void handleUndo() {
   uint8_t idx = 0;
   if (seqName.length() > 0) {
       char c = seqName.charAt(0);
-      if (c >= 'A' && c <= 'J') idx = c - 'A';
+      if (c >= 'A' && c < 'A' + NUM_SEQ) idx = c - 'A';
   }
   
   if (seqLen[idx] == 0) { sendErr("Sequence kosong"); return; }
@@ -131,7 +156,7 @@ void handleClear() {
   uint8_t idx = 0;
   if (seqName.length() > 0) {
       char c = seqName.charAt(0);
-      if (c >= 'A' && c <= 'J') idx = c - 'A';
+      if (c >= 'A' && c < 'A' + NUM_SEQ) idx = c - 'A';
   }
   
   seqLen[idx] = 0;
@@ -172,12 +197,24 @@ void handlePlay() {
   
   playFrame   = 0;
   frameMoving = true;
-  playServoIdx = -1; // akan diproses di dalam function agar langsung dicari yang beda
+  playServoIdx = -1;
   waitingServoDelay = true;
-  servoDelayStart = millis() - 500; // paksa agar langsung jalan saat masuk loop
+  servoDelayStart = millis() - 500;
   inHold      = false;
-  state = PLAY_SEQ;
-  sendOK("Play dimulai");
+
+  // Logika Otomatis:
+  // 1. Jika sensor mendeteksi benda saat start: konveyor stop, arm langsung jalan
+  // 2. Jika belum ada benda: konveyor jalan mencari benda
+  if (sensorEnabled && sensorDetected()) {
+    conveyorOff();
+    state = PLAY_SEQ;
+    sendOK("Objek terdeteksi, arm servo mulai berjalan");
+  } else {
+    sensorClearNeeded = false;
+    conveyorOn();
+    state = CONVEYOR_RUN;
+    sendOK("Konveyor berjalan mencari objek...");
+  }
 }
 
 // ── GET /stop ─────────────────────────────────────────────────
@@ -378,10 +415,10 @@ void runSequence() {
       }
     }
 
-    // Jalankan konveyor setiap kali satu sequence selesai
+    // 4. Konveyor akan berjalan jika arm servo sudah menjalankan frame pada sequence
     playSeqIdx = nextSeq;
     conveyorOn();
-    tConv = millis();
+    sensorClearNeeded = (sensorEnabled && sensorDetected());
     state = CONVEYOR_RUN;
     return;
   }
@@ -406,7 +443,7 @@ void setup() {
 
   // Muat sequence dari flash
   loadAll();
-  Serial.printf("Loaded seqA=%d, seqB=%d frames\n", seqLen[0], seqLen[1]);
+  Serial.printf("Loaded seqA=%d, seqB=%d, seqC=%d frames\n", seqLen[0], seqLen[1], seqLen[2]);
 
   // WiFi Access Point
   WiFi.softAP(AP_SSID, AP_PASS);
@@ -418,6 +455,7 @@ void setup() {
   server.on("/servo",    handleServo);
   server.on("/save",     handleSave);
   server.on("/undo",     handleUndo);
+  server.on("/deleteframe", handleDeleteFrame);
   server.on("/clear",    handleClear);
   server.on("/clearAll", handleClearAll);
   server.on("/play",     handlePlay);
@@ -453,28 +491,33 @@ void loop() {
       break;
 
     case PLAY_SEQ:
+      // 3. Jika arm servo sedang menjalankan tugas: konveyor TIDAK AKAN BERGERAK
+      // meskipun sensor tidak mendeteksi barang (misal barang diangkat)
+      conveyorOff();
       runSequence();
       break;
 
     case CONVEYOR_RUN:
-      // Cek sensor: jika mendeteksi objek, hentikan konveyor (jeda)
-      if (sensorEnabled && sensorDetected()) {
-        conveyorOff();
-        // Tidak maju waktu tConv agar konveyor kembali jalan setelah objek pergi
-        // (efeknya CONVEYOR_MS mulai lagi dari saat sensor bebas)
-        tConv = millis();
+      // Konveyor berjalan membawa objek
+      conveyorOn();
+      if (sensorClearNeeded) {
+        // Tunggu hingga objek sebelumnya lolos dari area sensor
+        if (!sensorDetected()) {
+          sensorClearNeeded = false;
+        }
       } else {
-        conveyorOn(); // pastikan nyala jika sensor bebas
-      }
-
-      if (millis() - tConv >= CONVEYOR_MS) {
-        conveyorOff();
-        // Langsung pindah ke PLAY_SEQ berikutnya yang sudah diset di runSequence
-        state = PLAY_SEQ;
-        frameMoving = true;
-        playServoIdx = -1;
-        waitingServoDelay = true;
-        servoDelayStart = millis() - 500;
+        // 1. Sensor mendeteksi benda -> konveyor berhenti
+        if (sensorEnabled && sensorDetected()) {
+          conveyorOff();
+          // 2. Jika sensor mendeteksi benda -> arm servo dijalankan sesuai sequence berikutnya
+          state = PLAY_SEQ;
+          playFrame = 0;
+          frameMoving = true;
+          playServoIdx = -1;
+          waitingServoDelay = true;
+          servoDelayStart = millis() - 500;
+          inHold = false;
+        }
       }
       break;
 
